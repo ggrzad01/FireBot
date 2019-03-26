@@ -6,7 +6,10 @@ Servo servoLeft, servoRight;
 int fLeft=1;
 int fRight= -1 * fLeft;
 
-int onLine=0;
+int valLeft = 0;                  // variable to store the values from LEFT sensor(initially zero)
+int valRight = 0;                 // variable to store the values from RIGHT sensor(initially zero)
+int valForward = 0;               // variable to store the values from FORWARD sensor(initially zero)
+int onLine = 0;
 
 
 // the setup routine runs once when you press reset:
@@ -14,16 +17,12 @@ void setup() {
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
   // make the pushbutton's pin an input:
-  pinMode(fireSensorPin, INPUT);
-  pinMode(rightDistSPin, INPUT);
-  pinMode(leftDistSPin, INPUT);
-  pinMode(pingSPin, INPUT);
-  pinMode(frontDistSPin, INPUT);
-  pinMode(poten, INPUT);
-  pinMode(bottomLineSPin, INPUT);
   pinMode(fanPin, OUTPUT);
+  //setup movement servos
   servoLeft.attach();
   servoRight.attach();
+  servoLeft.write(90);
+  servoRight.write(90);
 }
 
 
@@ -33,25 +32,56 @@ void loop()
   // check for fire sensor active:
   int fireState = digitalRead(fireSensorPin);
   delay(1);        // delay in between reads for stability
-
+  
+ 
   
   
   if(bottomLineSPin>50 && fireState){
     //stop moving
-
-    //change angle
+      
+    //aim
   }
   
-  else if(!fireState){
-  
-  //Left hand wall follow
-    //sense wall
-    
-  //go forward
-  
-  //turn left
+  else if(!fireState)
+  {
+    //Left hand wall follow
+    if(valLeft < threshold && valRight < threshold && valForward < threshold)
+    {
+      backup();
+    }
+    if(valLeft > threshold) 
+    {
+    turnLeft(); // ???need to add amount of time to turn for???
+    }
+    //go forward
+    if(valLeft < threshold) 
+    {
+      forward();
+    }
+ 
 
-  //turn right 
+    
+  }
+  
+  void forward()
+  {
+    servoLeft.write(180);
+    servoRight.write(180);
+  }
+  void backward()
+  {
+    servoLeft.write(0);
+    servoRight.write(0);
+  }
+  void turnLeft()
+  {
+    servoLeft.write(90);
+    servoRight.write(180);
+  }
+  void turnRight()
+  {
+    servoLeft.write(90);
+    servoRight.write(90);
   }
   
   }
