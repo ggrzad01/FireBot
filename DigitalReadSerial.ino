@@ -3,14 +3,20 @@
 int leftDistSPint, rightDistSPin, frontDistSPin, poten, fanPin, pingSPin, bottomLineSPin, servoLeftPos, servoRightPos;
 int fireSPin = 3;
 Servo servoLeft, servoRight;
-int fLeft=1;
-int fRight= -1 * fLeft;
+int stop = 90;
+int fireState;
+int fLeft= 180;
+int fRight= 0;
 int threshold = 200;              // distance threshold for sensors to tell how to navigate
 int valLeft = 0;                  // variable to store the values from LEFT sensor(initially zero)
 int valRight = 0;                 // variable to store the values from RIGHT sensor(initially zero)
 int valForward = 0;               // variable to store the values from FORWARD sensor(initially zero)
 int onLine = 0;
-
+//right distance has min 132 max 768
+//front distance mins 132 andmax 767
+//left distance min 112 and max 767
+//line sensor min 16 and max is 1023
+//fire has max of 985
 
 // the setup routine runs once when you press reset:
 void setup() {
@@ -30,8 +36,8 @@ void setup() {
 void loop() 
 {
   // check for fire sensor active:
-  // possibly want a read sensor method that takes a reading of all sensors readSensor()
-  int fireState = digitalRead(fireSensorPin);
+  readSensor()// possibly want a read sensor method that takes a reading of all sensors readSensor()
+  
   delay(1);        // delay in between reads for stability
   
   if(bottomLineSPin>50 && fireState){
@@ -65,6 +71,7 @@ void loop()
     else if(valLeft < threshold && valRight < threshold && valForward < threshold)
     {
       backup();
+      turnaround();
     }
     
     else if(valLeft > threshold) 
@@ -87,23 +94,28 @@ void loop()
   
   void forward()
   {
-    servoLeft.write(180);
-    servoRight.write(180);
+    servoLeft.write(fLeft);
+    servoRight.write(fRight);
   }
   void backward()
   {
-    servoLeft.write(0);
-    servoRight.write(0);
+    servoLeft.write(leftBackward);
+    servoRight.write(rightBackward);
   }
   void turnLeft()
   {
-    servoLeft.write(90);
-    servoRight.write(180);
+    servoLeft.write(stop);
+    servoRight.write(rightForward);
   }
   void turnRight()
   {
-    servoLeft.write(180);
-    servoRight.write(90);
+    servoLeft.write(fLeft));
+    servoRight.write(stop);
+  }
+  void turnAround()
+  {
+    servoLeft.write(fLeft);
+    servoRight.write(fLeft);
   }
   void readSensors()
   {
