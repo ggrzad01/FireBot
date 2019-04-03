@@ -1,61 +1,159 @@
-#include <Servo.h>
-// 
-int leftDistSPint, rightDistSPin, frontDistSPin, poten, fanPin, pingSPin, bottomLineSPin, servoLeftPos, servoRightPos;
-int fireSPin = 3;
-Servo servoLeft, servoRight;
-int fLeft=1;
-int fRight= -1 * fLeft;
+#include<Servo.h>
 
-int onLine=0;
+int rightWallPin=A0;
+int frontWallPin=A2;
+int leftWallPin=A1;
+int linePin=A3;
+int leftFirePin=A4;
+int rightFirePin=A5;
+
+int leftWheelPin=6;
+int rightWheelPin=3;
+int fanPin=2;
+
+Servo leftWheel;
+Servo rightWheel;
+
+int leftForward=180;
+int rightForward=0;
+int stopped=90;
+int leftBack=rightForward;
+int rightBack=leftForward;
+
+int n=15;
+int wallThreshold=600;
+int wallMin=100;
+
+int moveTime=0;
+int turnTime=925;
 
 
-// the setup routine runs once when you press reset:
+int rightWallRead=0;
+int leftWallRead=0;
+int frontWallRead=0;
+int lineRead=0;
+int leftFireRead=0;
+int rightFireRead=0;
+
+
 void setup() {
-  // initialize serial communication at 9600 bits per second:
+  // put your setup code here, to run once:
   Serial.begin(9600);
-  // make the pushbutton's pin an input:
-  pinMode(fireSensorPin, INPUT);
-  pinMode(rightDistSPin, INPUT);
-  pinMode(leftDistSPin, INPUT);
-  pinMode(pingSPin, INPUT);
-  pinMode(frontDistSPin, INPUT);
-  pinMode(poten, INPUT);
-  pinMode(bottomLineSPin, INPUT);
   pinMode(fanPin, OUTPUT);
-  servoLeft.attach();
-  servoRight.attach();
+  leftWheel.attach(leftWheelPin);
+  rightWheel.attach(rightWheelPin);
+  leftWheel.write(stopped);
+  rightWheel.write(stopped);  
 }
 
+void loop() {
+  //get Sensor reads
+  sensorRead();
 
-// the loop routine runs over and over again forever:
-void loop() 
-{
-  // check for fire sensor active:
-  int fireState = digitalRead(fireSensorPin);
-  delay(1);        // delay in between reads for stability
+  Serial.print("rightWallRead"); Serial.println(rightWallRead);
+  Serial.print("frontWallRead"); Serial.println(frontWallRead);
+  Serial.print("leftWallRead"); Serial.println(leftWallRead);
 
-  
-  
-  if(bottomLineSPin>50 && fireState){
-    //stop moving
+  leftWallFollow();
 
-    //change angle
+  reset();    
+}
+
+void sensorRead(){
+    for(int x=0;x<=n;x++){
+      rightWallRead+=analogRead(rightWallPin);
+      frontWallRead+=analogRead(frontWallPin);
+      leftWallRead+=analogRead(leftWallPin);
+      lineRead+=analogRead(linePin);
+      leftFireRead+=analogRead(leftFirePin);
+      rightFireRead+=analogRead(rightFirePin);
+    }
+  //average Sensor reads
+  rightWallRead/=n;
+  frontWallRead/=n;
+  leftWallRead/=n;
+  lineRead/=n;
+  leftFireRead/=n;
+  rightFireRead/=n;}
+
+void forward(){
+  leftWheel.write(leftForward);
+  rightWheel.write(rightForward);
   }
+
+void backward(){
+  leftWheel.write(leftBack);
+  rightWheel.write(rightBack);
+  }
+
+void stopMoving(){
+  leftWheel.write(stopped);
+  rightWheel.write(stopped);
+  }
+
+void turnLeft(){
+  leftWheel.write(stopped);
+  rightWheel.write(rightForward);
+  }
+
+void turnRight(){
+  leftWheel.write(leftForward);
+  rightWheel.write(stopped);
+  }
+
+void cornerRight(){
+  leftWheel.write(leftForward);
+  rightWheel.write(rightBack);
+  }
+
+void cornerLeft(){
+  leftWheel.write(leftBack);
+  rightWheel.write(rightForward);
+  }
+
+void reset(){
+  rightWallRead=0;
+  frontWallRead=0;
+  leftWallRead=0;
+  lineRead=0;
+  leftFireRead=0;
+  rightFireRead=0;
+}
+
+void leftWallFollow(){
+  //turn left in empty space
+   if(frontWallRead > wallThreshold){
+    if(leftWallRead>wallThreshold){
+      cornerRight();
+      delay(turnTime);}
+    else if(rightWallRead>wallThreshold){
+      cornerLeft();
+      delay(turnTime);
+      }
+    else{}
+  }
+
   
-  else if(!fireState){
   
-  //Left hand wall follow
-    //sense wall
+  else if(leftWallRead < wallThreshold ){
+      //for(int x = 0 ;x += 50
+      turnLeft();
+      delay(moveTime);
+      //forward();
+      //delay(100); 
+    }
+    else if(rightWallRead < wallThreshold){
+      turnRight();
+      delay(moveTime);
+    }
     
-  //go forward
+  else 
+{
+    forward();
+    delay(moveTime);
+    }
+    }
+  //right
+
+
   
-  //turn left
-
-  //turn right 
-  }
-  
-  }
-
-
-
-
